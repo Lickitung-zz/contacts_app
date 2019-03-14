@@ -1,7 +1,11 @@
 class Api::ContactsController < ApplicationController
   def index
-    @contacts = Contact.all
-    render 'index.json.jbuilder'
+    if current_user
+      @contacts = current_user.contacts
+      render 'index.json.jbuilder'
+    else
+      render json: {message: "No contacts."}
+    end
   end
 
   def show
@@ -11,22 +15,35 @@ class Api::ContactsController < ApplicationController
 
   def update
     @contact = Contact.find_by(id: params[:id])
-    @contact.name = params[:name] || @contact.name
+    @contact.first_name = params[:first_name] || @contact.first_name
     @contact.phone_number = params[:phone_number] || @contact.phone_number
     @contact.email = params[:email] || @contact.email
+    @contact.middle_name = params[:middle_name] || @contact.middle_name
+    @contact.bio = params[:bio] || @contact.bio
     @contact.save
-    render 'show.json.jbuilder'
+    @contact.last_name = params[:last_name] || @contact.last_name
+    if @contact.save
+      render "show.json.jbuilder"
+    else
+      render "error.json.jbuilder"
+    end
   end
 
   def create
-    @nothing = "nothing was entered here"
+    nothing = "nothing was entered here"
     @contact = Contact.new(
-     name: params[:name] || @nothing,
-     phone_number: params[:phone_number] || @nothing,
-     email: params[:email] || @nothing
+     first_name: params[:first_name] || nothing,
+     middle_name: params[:middle_name] || nothing,
+     phone_number: params[:phone_number] || nothing,
+     email: params[:email] || nothing,
+     user_id: params[:email]
     )
-    @contact.save
-    render 'show.json.jbuilder'
+    @contact.last_name = params[:last_name] || nothing
+    if @contact.save
+      render "show.json.jbuilder"
+    else
+      render "error.json.jbuilder"
+    end
   end
 
   def destroy
